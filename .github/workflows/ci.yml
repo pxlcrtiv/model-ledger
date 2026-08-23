@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contracts:
+    name: Forge build + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: Check formatting
+        run: forge fmt --check
+      - name: Build
+        run: forge build --sizes
+      - name: Test
+        run: forge test -vvv
+
+  cli-unit:
+    name: CLI unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -r cli/requirements-dev.txt
+      - name: Manifest hashing unit tests
+        run: pytest cli/tests/test_manifest.py -q
+
+  cli-e2e-anvil:
+    name: CLI e2e on local anvil
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -r cli/requirements-dev.txt
+      - name: Full lifecycle against anvil
+        run: |
+          anvil --port 8545 > /tmp/anvil.log 2>&1 &
+          ANVIL_PID=$!
+          sleep 2
+          pytest cli/tests/test_chain_live.py -q
+          STATUS=$?
+          kill $ANVIL_PID 2>/dev/null || true
+          exit $STATUS

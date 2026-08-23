@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ModelLedger — on-chain provenance viewer</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #0d1117; color: #e6edf3; margin: 0; }
+  main { max-width: 800px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1 { font-size: 1.4rem; }
+  h1 .accent { color: #3fb950; }
+  .sub { color: #8b949e; margin-top: -8px; font-size: 0.85rem; }
+  label { display: block; margin-top: 14px; font-size: 0.75rem; color: #8b949e; text-transform: uppercase; letter-spacing: .06em; }
+  input { width: 100%; box-sizing: border-box; margin-top: 6px; padding: 9px 10px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #e6edf3; font: inherit; font-size: 0.85rem; }
+  .row { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+  button { flex: 1; min-width: 120px; padding: 10px; border-radius: 6px; border: 1px solid #30363d; background: #21262d; color: #e6edf3; font: inherit; font-size: 0.85rem; cursor: pointer; }
+  button:hover { background: #30363d; }
+  button.primary { background: #238636; border-color: #2ea043; }
+  button.primary:hover { background: #2ea043; }
+  pre { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 14px; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; margin-top: 18px; min-height: 40px; white-space: pre-wrap; word-break: break-all; }
+  .ok { color: #3fb950; } .bad { color: #f85149; } .dim { color: #8b949e; }
+  footer { margin-top: 40px; color: #484f58; font-size: 0.75rem; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ModelLedger <span class="accent">verify</span></h1>
+  <p class="sub">Proof-of-provenance viewer: check that a model's manifest hash is registered on-chain.</p>
+
+  <label for="rpc">RPC endpoint</label>
+  <input id="rpc" placeholder="http://127.0.0.1:8545" value="http://127.0.0.1:8545" />
+
+  <label for="addr">ModelLedger contract address</label>
+  <input id="addr" placeholder="0x…" />
+
+  <label for="repo">Repo id</label>
+  <input id="repo" placeholder="org/model-name" value="pxlcrtiv/demo-model" />
+
+  <label for="hash">Candidate manifest hash (optional — verify a specific hash)</label>
+  <input id="hash" placeholder="0x… (leave empty to skip the hash check)" />
+
+  <div class="row">
+    <button class="primary" id="verify">Verify</button>
+    <button id="get">Get record</button>
+    <button id="list">List all</button>
+  </div>
+
+  <pre id="out">Enter an RPC + contract address, then hit Verify.</pre>
+
+  <footer>
+    ModelLedger · Sepolia testnet-first · no value held by the contract ·
+    view calls only — this page never sends a transaction.
+  </footer>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const out = $("out");
+  const params = new URLSearchParams(location.search);
+  if (params.get("rpc")) $("rpc").value = params.get("rpc");
+  if (params.get("address")) $("addr").value = params.get("address");
+  if (params.get("repo")) $("repo").value = params.get("repo");
+  if (params.get("hash")) $("hash").value = params.get("hash");
+
+  function print(line, cls) {
+    out.textContent += (cls ? line + "\n" : line + "\n");
+  }
+  function clear() { out.textContent = ""; }
+
+  const MIN_ABI = [
+    "function verifyModel(string repoId, bytes32 candidateHash) view returns (bool verified, tuple(address owner, bytes32 manifestHash, string repoId, string metadataUri, uint64 registeredAt, uint64 updatedAt, uint64 manifestVersion) record)",
+    "function getModel(string repoId) view returns (tuple(address owner, bytes32 manifestHash, string repoId, string metadataUri, uint64 registeredAt, uint64 updatedAt, uint64 manifestVersion) record)",
+    "function allRepoIds() view returns (string[])",
+    "function totalModels() view returns (uint256)",
+  ];
+
+  function connect() {
+    const provider = new ethers.JsonRpcProvider($("rpc").value);
+    const address = $("addr").value.trim();
+    if (!ethers.isAddress(address)) throw new Error("invalid contract address");
+    return new ethers.Contract(address, MIN_ABI, provider);
+  }
+
+  function fmtRecord(r) {
+    const ts = (x) => new Date(Number(x) * 1000).toISOString().replace("T", " ").slice(0, 19) + " UTC";
+    return [
+      `owner           ${r.owner}`,
+      `manifestHash    ${r.manifestHash}`,
+      `repoId          ${r.repoId}`,
+      `metadataUri     ${r.metadataUri || "-"}`,
+      `registeredAt    ${ts(r.registeredAt)}`,
+      `updatedAt       ${ts(r.updatedAt)}`,
+      `manifestVersion ${r.manifestVersion}`,
+    ].join("\n");
+  }
+
+  $("verify").onclick = async () => {
+    clear();
+    try {
+      const c = connect();
+      const repo = $("repo").value.trim();
+      const h = $("hash").value.trim();
+      print(repo.startsWith("0x") || !repo ? "" : "");
+      if (h) {
+        const [ok, rec] = await c.verifyModel(repo, h);
+        print(ok ? `${repo} VERIFIED ✓` : `${repo} NOT VERIFIED ✗`, ok ? "ok" : "bad");
+        print(fmtRecord(rec));
+      } else {
+        print(`(no candidate hash given — showing registered record for ${repo})`, "dim");
+        const rec = await c.getModel(repo);
+        print(fmtRecord(rec));
+      }
+    } catch (e) { print("error: " + e.message, "bad"); }
+  };
+
+  $("get").onclick = async () => {
+    clear();
+    try {
+      const c = connect();
+      const rec = await c.getModel($("repo").value.trim());
+      print(fmtRecord(rec));
+    } catch (e) { print("error: " + e.message, "bad"); }
+  };
+
+  $("list").onclick = async () => {
+    clear();
+    try {
+      const c = connect();
+      const total = await c.totalModels();
+      const ids = await c.allRepoIds();
+      print(`${total} registered model(s)` + (total ? ":" : ""));
+      ids.forEach((id) => print(`  ${id}`));
+    } catch (e) { print("error: " + e.message, "bad"); }
+  };
+</script>
+</body>
+</html>
