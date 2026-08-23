@@ -1,13 +1,27 @@
-# ModelLedger
+<div align="center">
 
-**On-chain provenance for machine-learning models: hash your model's manifest, register it on-chain, let anyone verify it. No trusted third party.**
+# ⛓️ ModelLedger
 
-[![CI](https://github.com/pxlcrtiv/model-ledger/actions/workflows/ci.yml/badge.svg)](https://github.com/pxlcrtiv/model-ledger/actions/workflows/ci.yml)
+**On-chain provenance for machine-learning models: hash your model's manifest,
+register it on-chain, let anyone verify it. No trusted third party.**
+
+[![CI](https://img.shields.io/github/actions/workflow/status/pxlcrtiv/model-ledger/ci.yml?branch=main&label=CI&logo=github)](https://github.com/pxlcrtiv/model-ledger/actions)
+[![Stars](https://img.shields.io/github/stars/pxlcrtiv/model-ledger?logo=github)](https://github.com/pxlcrtiv/model-ledger/stargazers)
+[![Forks](https://img.shields.io/github/forks/pxlcrtiv/model-ledger?logo=github)](https://github.com/pxlcrtiv/model-ledger/forks)
+[![Last commit](https://img.shields.io/github/last-commit/pxlcrtiv/model-ledger?label=last%20commit)](https://github.com/pxlcrtiv/model-ledger/commits/main)
+
 [![License: MIT](https://img.shields.io/github/license/pxlcrtiv/model-ledger)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/pxlcrtiv/model-ledger)](https://github.com/pxlcrtiv/model-ledger)
-![Solidity 0.8.26](https://img.shields.io/badge/Solidity-0.8.26-363636?logo=solidity)
+[![Repo size](https://img.shields.io/github/repo-size/pxlcrtiv/model-ledger?label=size)](https://github.com/pxlcrtiv/model-ledger)
+![Solidity 0.8.26](https://img.shields.io/badge/Solidity-0.8.26-363636?logo=solidity&logoColor=white)
 ![Foundry](https://img.shields.io/badge/built%20with-Foundry-000000?logo=ethereum)
-![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python)
+![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+</div>
+
+**Tech stack:** Solidity 0.8.26 · Foundry (`forge`/`anvil`) · Python 3.12
+(`web3.py`, `click`, `huggingface_hub`) · ethers.js (read-only viewer) ·
+GitHub Actions CI
 
 ---
 
@@ -49,6 +63,23 @@ The canonical manifest format is locked by **golden cross-language tests**:
 `test/ModelLedger.t.sol` embeds the same fixture hash as `cli/tests/test_manifest.py`,
 so Python and Solidity can never drift apart.
 
+## Features
+
+- 🔐 **Cryptographic provenance** — a canonical, byte-exact manifest (every
+  file's path, size, sha256) hashed once with `keccak256` and stored on-chain.
+  Records are append-only and owner-controlled.
+- ⛓️ **Zero-dependency EVM registry** — ~200-line Solidity contract, no
+  OpenZeppelin, holds no value by design. Deploys anywhere in one tx.
+- 🧪 **Golden cross-language guarantees** — the identical manifest hash is
+  asserted in both Solidity and Python; the formats can never drift apart.
+- 📦 **Hugging Face native** — manifest a model straight from a HF repo
+  (metadata only, no weight downloads) or from any local directory.
+- 🖥️ **CLI + read-only web viewer** — full Python CLI
+  (`manifest`/`register`/`verify`/`get`/`list`/`update`/`deploy`/`demo`) plus
+  a zero-dependency ethers.js page that can only make view calls.
+- 🚀 **Sepolia-ready** — Foundry deploy + Etherscan verify scripts included;
+  zero-key local demo on `anvil`.
+
 ## Quickstart — 60 seconds on a local anvil chain
 
 No testnet funds, no API keys — the whole flow runs locally:
@@ -82,6 +113,8 @@ total:   2 model(s) registered
 ── demo complete ──────────────────────────────────────────
 contract address: 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9  (saved in deployments/anvil.json)
 ```
+
+![model-ledger demo on a local anvil chain](docs/demo.svg)
 
 ## The smart contract
 
@@ -193,10 +226,11 @@ maintenance rule. The repo is built for steady, meaningful daily commits.
 
 ## Contributing
 
-Issues, PRs and demo ideas welcome. Before opening a PR: `forge fmt` +
-`forge test` + `pytest cli/tests/` must pass; if you touch the manifest format,
-update **both** golden fixtures in the same commit. See CONTRIBUTING rules in
-[ROADMAP.md](ROADMAP.md).
+Issues, PRs and demo ideas welcome — see [CONTRIBUTING.md](CONTRIBUTING.md)
+for ground rules, the daily-commit workflow, and the PR checklist. Before
+opening a PR: `forge fmt` + `forge test` + `pytest cli/tests/` must pass, and
+if you touch the manifest format you must update **both** golden fixtures in
+the same commit (details in [ROADMAP.md](ROADMAP.md)).
 
 ## License
 
