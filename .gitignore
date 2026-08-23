@@ -1,0 +1,21 @@
+# Foundry
+out/
+cache/
+broadcast/
+lib/forge-std/.git/
+
+# Local deployment artifacts (addresses are derivable from the deploy tx)
+deployments/*.json
+
+# Node / Python
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets — never commit real keys
+.env
+
+# macOS
+.DS_Store
