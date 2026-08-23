@@ -205,6 +205,50 @@ python -m http.server 8000 --directory web
 - **The contract holds nothing**: no ETH, no ERC-20, no value transfer paths. Attack surface is a public append-only mapping.
 - **Testnet-first**: Sepolia is the reference deployment; the demo runs on local anvil. See `SECURITY` section of the roadmap for the trust-model deep-dive.
 
+## Daily Green automation
+
+This repo makes one meaningful, dated commit every single day — no empty
+commits and no filler: each day appends one hand-curated registry/EVM
+best-practice entry to `docs/daily-log.md`, rotated deterministically from a
+pool.
+
+**How it runs**
+
+- `scripts/daily_update.py` picks today's entry from
+  `scripts/tips_pool.json` (calendar-day rotation), appends it to
+  `docs/daily-log.md`, commits it as `docs: daily ledger entry YYYY-MM-DD`
+  and pushes.
+- Idempotent: a day is never committed twice; repeated runs are no-ops.
+- Local scheduler (primary): macOS `launchd` runs it at **12:07 and 18:07
+  local** (`~/Library/LaunchAgents/com.pxlcrtiv.daily-green.plist`, wrapper
+  `~/portfolio/scripts/daily-green.sh` — covers both portfolio repos).
+- Cloud fallback: `.github/workflows/daily.yml` runs the same script at
+  **12:00 UTC** on GitHub Actions. Whichever fires first wins the day; the
+  other sees the entry already exists and exits cleanly. If the machine was
+  off for days, the next run **backfills every missed day** — one dated,
+  non-empty commit per day (max 14) — so the contribution graph stays green.
+- Run log: `~/.daily-green/daily-green.log`.
+
+> Note: this GitHub account currently cannot start Actions runners at all
+> (account billing lock — every job dies before starting, CI badge included).
+> The workflow file is valid and takes over automatically once that's
+> resolved; until then the local launchd job is the live scheduler.
+
+**Customize**
+
+- Add or edit entries in `scripts/tips_pool.json` (`title`, `body`,
+  optional `command`). The pool rotates by calendar day, so any change
+  reshuffles the sequence from then on.
+- Change the time: edit `Hour`/`Minute` in the launchd plist and reload
+  (`launchctl bootout` + `bootstrap`), or the `cron:` line in
+  `.github/workflows/daily.yml`.
+
+**Pause**
+
+- This repo only: `touch .daily-pause` in the repo root (delete the file to
+  resume).
+- Everything: `launchctl bootout gui/$(id -u)/com.pxlcrtiv.daily-green`
+
 ## Repository layout
 
 ```

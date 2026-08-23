@@ -1,0 +1,212 @@
+[
+  {
+    "title": "A model registry is a hash ledger, not a file server",
+    "body": "The whole point of ModelLedger is that the artifact lives anywhere (HF Hub, S3, your laptop) and the chain stores only its fingerprint: manifest hash + metadata + owner. Keep `sha256` of the manifest as the record key — it is cryptographically stable across languages, which is exactly why the golden cross-language tests lock it in Solidity and Python.",
+    "command": "mlm manifest register --model example/demo-model --owner 0xYourAddress"
+  },
+  {
+    "title": "Why sha256 and not keccak256 for content",
+    "body": "keccak256 is the EVM's native hash and is great for storage keys, but sha256 is the universal content-addressing standard (IPFS, Git, GCS) — the same manifest hashes identically in Python, JS, and Go. ModelLedger deliberately uses sha256 for artifact integrity and keccak256 for EVM addressing. Mixing them up is a classic cross-language footgun; the golden tests exist to catch exactly that.",
+    "command": "python -c \"import hashlib; print(hashlib.sha256(b'model').hexdigest())\""
+  },
+  {
+    "title": "Manifest = the reproducibility contract",
+    "body": "A good manifest pins: model name, version, framework, architecture, weights hash, dataset(s) used, license, and training config. Someone with the manifest can rebuild the artifact close enough to verify integrity — that is what makes a registry trustworthy instead of a directory.",
+    "command": "mlm manifest --help"
+  },
+  {
+    "title": "Register the manifest, not the blob",
+    "body": "Hashing a multi-GB checkpoint on-chain is absurd (and unpayable). Hash the *manifest*, which itself contains the blob hashes — a Merkle-trie style chain of trust: record -> manifest -> weights. Registration cost stays constant regardless of model size.",
+    "command": "mlm manifest register --model example/demo-model --owner 0xYourAddress"
+  },
+  {
+    "title": "Events are the free database of the registry",
+    "body": "Indexing `RecordRegistered(address owner, string modelId, bytes32 manifestHash, ...)` topics is how explorers, UIs, and bots learn about records — cheaper and more reliable than reading storage. If your registry frontend ever breaks, the events are the fallback source of truth.",
+    "command": "cast logs --address <registry> 'RecordRegistered(address,string,bytes32,uint256,uint256)'"
+  },
+  {
+    "title": "Struct packing: three uint256 records can cost 3x the gas of one packed",
+    "body": "Storage writes cost 20k gas per fresh slot. Order struct fields fat-to-thin (uint256, address, bytes32, then pack uints together) so related values share slots. In a registry record, `timestamp`, `owner`, and version fit naturally — measure with `forge snapshot` before and after.",
+    "command": "forge snapshot --diff"
+  },
+  {
+    "title": "Revert loudly, return quietly",
+    "body": "Registry reads should revert with a reason string (`getRecord` on an unknown id) so callers can't treat 'not found' as 'zero record'. External-facing helper functions returning bools hide failures in downstream integrations. Foundry tests should assert the exact revert reason.",
+    "command": "forge test --match-test testRevertUnknownRecord -vvv"
+  },
+  {
+    "title": "Ownable without the ceremony",
+    "body": "ModelLedger's registry is zero-dependency: `onlyOwner` is a modifier, not an OpenZeppelin import. That is a deliberate call — fewer deps means faster CI, smaller bytecode, and no supply-chain surface. The trade-off is you hand-audit the two lines that make up the pattern.",
+    "command": "cat contracts/ModelLedger.sol | grep -n 'onlyOwner\\|owner' | head"
+  },
+  {
+    "title": "Append-only registries win trust",
+    "body": "Letting anyone overwrite a model record destroys provenance — the record you verified yesterday is silently different today. Design for append-and-supersede: new versions create new records, old ones stay immutable and verifiable. Supersession (pointers from old to new) is a feature, mutation is a bug.",
+    "command": "mlm list --address <registry>"
+  },
+  {
+    "title": "Metadata schema versioning: v1 records never die",
+    "body": "The moment you change the manifest JSON shape, old records must still parse and verify. Version the schema inside the manifest (`\"schema\": \"model-ledger/v1\"`) and keep a decoder per version in the CLI. Breaking parsing = breaking every past verification.",
+    "command": "jq '.schema' example/demo-model/manifest.json"
+  },
+  {
+    "title": "HF Hub hashes are free integrity anchors",
+    "body": "Hugging Face exposes `sha256` metadata for every file in a repo. ModelLedger reads that metadata without downloading the weights — a lightning-fast, offline-friendly way to build the manifest the registry will hold.",
+    "command": "mlm manifest register --model gpt2 --from-hf"
+  },
+  {
+    "title": "Pin, pin, pin: reproducibility starts at the dataset",
+    "body": "A model is a function of its data. If the dataset revision is unpinned, the checkpoint cannot be reproduced, and the registry record is theater. Store dataset name + revision/commit in the manifest, and prefer dataset-dedicated revisions over 'latest'.",
+    "command": "mlm manifest --help  # dataset fields"
+  },
+  {
+    "title": "License fields belong in the manifest, not in the README",
+    "body": "License drift is a real legal risk: a model re-released under a stricter license invalidates downstream use. Pin the license string in the manifest at registration time so the record is the audit trail, and re-register on license changes instead of editing prose.",
+    "command": "jq '.license' example/demo-model/manifest.json"
+  },
+  {
+    "title": "Benchmarks without hardware context are noise",
+    "body": "Registering 'accuracy 0.912' means nothing unless the manifest records hardware, precision, batch size, and dataset split. Benchmark values are part of the reproducibility contract, not decoration. ModelLedger records them as structured metadata so comparisons stay honest.",
+    "command": "mlm verify --model example/demo-model"
+  },
+  {
+    "title": "Provenance: the training-data hash is the hardest question",
+    "body": "Many teams cannot produce a hash of the exact training data their deployed model saw. That gap is exactly what a provenance registry exists to surface. Even a best-effort data manifest (name, commit, sampler config) today beats an unverifiable model tomorrow.",
+    "command": "mlm manifest register --model example/demo-model --owner 0xYourAddress"
+  },
+  {
+    "title": "Watermarking: the registry record as a fingerprint",
+    "body": "Registered models can carry an embedded watermark (a fine-tuned token or latent pattern) that proves provenance when the model leaks outside your org. The registry then proves *when* the artifact existed — the pairing is what makes takedown requests defensible.",
+    "command": "grep -rn 'watermark' docs/ 2>/dev/null || echo 'docs/daily-log.md has more'"
+  },
+  {
+    "title": "Model registries are the audit trail MLOps forgot",
+    "body": "MLflow tracks experiments; ModelLedger tracks *truth about artifacts on a public ledger*. If your CI produces a model nobody can point to as 'the one that shipped', you don't have MLOps — you have a folder. Registration should be a step in the release pipeline, not a manual ceremony.",
+    "command": "mlm register --model artifacts/model.pt --owner 0xYourAddress"
+  },
+  {
+    "title": "Test the contract before you deploy it",
+    "body": "Foundry makes contract testing a first-class citizen: `forge test` compiles, deploys to an in-memory EVM, and runs assertions in Solidity. The registry's 18-test suite covers behaviors, events, and the canonical hash invariant — run it in CI on every PR, not just before deploys.",
+    "command": "forge test"
+  },
+  {
+    "title": "Sepolia is the staging environment for the registry",
+    "body": "Testnets are free to the point of being treated as throwaway, but that is exactly their value: deploy, break, redeploy. The repo ships `Deploy.s.sol` and verified Sepolia deploy steps; the only blocker for a live demo is a funded test wallet — Sepolia faucets are public.",
+    "command": "forge script script/Deploy.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast"
+  },
+  {
+    "title": "Verification is the deploy step people skip",
+    "body": "An unverified contract on Etherscan is a black box for every recruiter or auditor who clicks through from your README. `forge verify-contract` with a free Etherscan API key turns the registry into a clickable, source-visible artifact. It is ten minutes that pays forever.",
+    "command": "forge verify-contract <address> contracts/ModelLedger.sol:ModelLedger --etherscan-api-key $ETHERSCAN_API_KEY"
+  },
+  {
+    "title": "Cheatcodes are the fuzzer's best friend",
+    "body": "Foundry cheatcodes (`vm.prank`, `vm.warp`, `vm.expectRevert`) let tests impersonate owners, advance time, and assert reverts without a single mock library. The registry tests lean on them heavily — read `test/ModelLedger.t.sol` to see the pattern before writing your own.",
+    "command": "forge test --match-test testRegister -vvv"
+  },
+  {
+    "title": "ABI encoding gotchas: strings are dynamic, bytes32 is not",
+    "body": "`abi.encode` of a string starts with an offset; `bytes32` is inline. Comparing `keccak256(abi.encodePacked(a))` for two strings is correct only if you know both lengths (padding collisions). The CLI and contract agree on the manifest hash precisely because both sides use the same explicit encoding — change it in one place and verification breaks everywhere.",
+    "command": "cast keccak $(printf 'hello' | xxd -p)"
+  },
+  {
+    "title": "forge snapshot: gas regressions as a diff",
+    "body": "`forge snapshot` writes per-test gas costs to `.gas-snapshot`; `forge snapshot --diff` shows the change in CI. A registry that grows 40% in gas per registration across a refactor is a real finding, and this makes it a one-liner.",
+    "command": "forge snapshot --diff"
+  },
+  {
+    "title": "Invariant fuzzing catches what unit tests bless",
+    "body": "Unit tests prove the cases you thought of. `invariant` tests run random sequences of calls and assert things like 'balance is conserved' or 'every record is owner-checked'. The registry's golden-hash test is the cross-language anchor; fuzzing is the discovery layer on top.",
+    "command": "forge test --match-test invariant"
+  },
+  {
+    "title": "The admin key is the real attack surface",
+    "body": "Once the registry is live, the only way to mutate it is the owner key. A single EOA owner is a single point of failure — consider a multisig or timelock for the registry admin role. Document the key-handling decision in the README so reviewers know the threat model.",
+    "command": "cast call <registry> 'owner()(address)'"
+  },
+  {
+    "title": "Renouncing ownership is a governance decision, not a cleanup step",
+    "body": "`renounceOwnership` permanently freezes the registry to append-only. That maximizes trust (nobody can mutate records) and removes your ability to fix bugs. Think of it as the 'mainnet immutable' moment — do it deliberately, with a planned feature freeze, not on a whim.",
+    "command": "cast send <registry> 'renounceOwnership()' --from <owner>"
+  },
+  {
+    "title": "Proxies: the upgrade later you may never need",
+    "body": "An upgradeable registry (EIP-1967 proxy) trades a little trust for future flexibility — but every proxy is a point of centralization and storage-layout discipline. For a provenance registry, immutability is often the *feature*; decide once, at design time, and document the decision.",
+    "command": "grep -rn 'proxy\\|upgrade' contracts/ docs/ 2>/dev/null || echo 'registry is deliberately immutable'"
+  },
+  {
+    "title": "CREATE2: deterministic deployment addresses",
+    "body": "`CREATE2` lets you compute the registry address before it exists (salt + init code hash). Deterministic addresses make README links stable across redeploys and let dApps pre-approve the registry. Foundry: `computeCreate2Address` cheatcode or `cast create2` for tooling.",
+    "command": "cast create2 --init-code $(forge inspect ModelLedger bytecode) --salt 0x0"
+  },
+  {
+    "title": "EIP-1167 clones: one registry logic, many instances",
+    "body": "Minimal proxies (20 lines of bytecode) let every team deploy their own registry pointing at shared logic — cheap (a few thousand gas) and individually ownable. Great for 'registry per org, logic shared' designs. The canonical hash still lives per-instance.",
+    "command": "grep -rni 'clone\\|1167' contracts/ 2>/dev/null || echo 'ModelLedger deploys full contracts for now'"
+  },
+  {
+    "title": "EIP-712 typed signatures: off-chain consent, on-chain records",
+    "body": "With EIP-712, the registry could accept signed metadata updates (the model owner signs a new manifest hash, any relayer submits it) — the classic 'gasless' pattern. `domainSeparator` + `hashStruct` must match exactly between signer and verifier; golden tests are the safety net.",
+    "command": "cast sig 'verifyModelUpdate(bytes32,bytes32,uint256,bytes)'"
+  },
+  {
+    "title": "personal_sign vs typed data: never hand-roll signatures",
+    "body": "Raw `personal_sign` of arbitrary bytes is how signature-replay bugs happen (users sign a 'message' that is actually a transaction). Prefer typed, domain-separated schemas (EIP-712) or EIP-191 versioned envelopes so a signature means exactly one thing.",
+    "command": "cast sig 'claim(string,address,uint256)'"
+  },
+  {
+    "title": "Keepers vs cron: on-chain automation is a trust decision",
+    "body": "Automated registry maintenance (heartbeat updates, expiry checks) can run off-chain (cron/launchd — like this very repo) or via keepers (Chainlink Automation). Off-chain is simpler and free; on-chain keepers are censorship-resistant. For a provenance registry, off-chain beats on-chain until trust questions are answered.",
+    "command": "crontab -l 2>/dev/null | head -5"
+  },
+  {
+    "title": "EIP-2981: royalties for model NFTs, if you go that route",
+    "body": "If model ownership ever tokenizes (memberships, licensing), EIP-2981 gives the registry a standard royalty interface — one function, `royaltyInfo`, that marketplaces read. It does not move money itself; it informs the marketplace. Standard > bespoke for anything other contracts will integrate.",
+    "command": "cast sig 'royaltyInfo(uint256,uint256)(address,uint256)'"
+  },
+  {
+    "title": "Semver for artifacts: models are software too",
+    "body": "MAJOR for architecture changes (weights incompatible), MINOR for behavior changes (new tokenizer, same arch), PATCH for retrains of the same config. Semantic versions make registry queries ('newest compatible v2') mechanical instead of tribal knowledge. Record the version in the manifest, not just the filename.",
+    "command": "jq '.version' example/demo-model/manifest.json"
+  },
+  {
+    "title": "Hash trees: don't register a 2 GB file, register its tree root",
+    "body": "For multi-file artifacts (weights + tokenizer + configs), hash each file and register the root of the tree. Verifying any subset of files is possible without the rest. This is how the registry scales from demo models to real checkpoints.",
+    "command": "mlm manifest register --model example/demo-model --owner 0xYourAddress"
+  },
+  {
+    "title": "Cold vs warm slots: why the registry reads are cheap",
+    "body": "First read of a storage slot costs 2100 gas (cold), subsequent 100 (warm). A CLI that reads the same record's fields back-to-back is naturally warm — but a dApp that re-queries per field pays cold repeatedly. Batch reads into one call/struct return where possible.",
+    "command": "cast call <registry> 'getRecord(address,string)(string,bytes32,uint256,bool)' <owner> 'demo-model'"
+  },
+  {
+    "title": ".env discipline: keys are not code",
+    "body": "The repo's `.env.example` lists every variable the deploy scripts need. Keep real keys out of git — a leaked `PRIVATE_KEY` in the registry repo compromises the *owner role of the registry itself*. `git log -p` is forever; rotate immediately if anything sensitive ever lands.",
+    "command": "grep -rn 'PRIVATE_KEY\\|SEPOLIA' .env.example"
+  },
+  {
+    "title": "anvil: the registry's local playground",
+    "body": "`anvil` spins up a local chain with pre-funded accounts in one command. It is how the CLI's `demo` command shows end-to-end register -> verify flows without any faucet — and exactly how the README's live transcript was produced. Local-first verification beats testnet-first for every iteration.",
+    "command": "anvil && mlm demo"
+  },
+  {
+    "title": "chisel: REPL your way through storage layouts",
+    "body": "Foundry's `chisel` gives an interactive Solidity REPL — instant experiments with struct packing, ABI encoding, and hashing before they become contract code. For registry record layouts, fifteen minutes in chisel beats three deploy-test cycles.",
+    "command": "chisel"
+  },
+  {
+    "title": "The verification loop: register, forget, verify",
+    "body": "The strongest demo of a provenance registry is the 'cold verify': delete local state, re-fetch the manifest from the registry, and prove the hash matches the artifact. If that works from another machine, the system is doing its job. This is the test to show a skeptical reviewer.",
+    "command": "mlm verify --model example/demo-model && sha256sum example/demo-model/manifest.json"
+  },
+  {
+    "title": "Document the demo so the demo documents you",
+    "body": "The README's live transcript (real anvil output, real hashes) is the highest-signal artifact for anyone evaluating the repo — it proves the pipeline works without trusting a word of prose. Keep transcripts regenerated when the CLI changes; stale transcripts are worse than none.",
+    "command": "mlm demo 2>&1 | tee docs/demo-transcript.txt"
+  },
+  {
+    "title": "A little green every day beats a big bang",
+    "body": "This very file is the pattern: one small, real, dated contribution per day compounds into a contribution history that says 'this person ships constantly'. The registry's ROADMAP doles the backlog into day-sized chunks for the same reason — activity that recruiters can see is activity that pays.",
+    "command": "git log --oneline --since=7.days | wc -l"
+  }
+]
