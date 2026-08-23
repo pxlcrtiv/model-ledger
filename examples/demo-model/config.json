@@ -1,0 +1,7 @@
+{
+  "model_type": "distilbert",
+  "task": "fill-mask",
+  "architectures": ["DistilBertForMaskedLM"],
+  "max_position_embeddings": 512,
+  "vocab_size": 30522
+}
