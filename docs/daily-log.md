@@ -12,3 +12,10 @@ Once the registry is live, the only way to mutate it is the owner key. A single 
 
 > `cast call <registry> 'owner()(address)'`
 
+
+## 2026-08-24 — Daily entry: Renouncing ownership is a governance decision, not a cleanup step
+
+`renounceOwnership` permanently freezes the registry to append-only. That maximizes trust (nobody can mutate records) and removes your ability to fix bugs. Think of it as the 'mainnet immutable' moment — do it deliberately, with a planned feature freeze, not on a whim.
+
+> `cast send <registry> 'renounceOwnership()' --from <owner>`
+
