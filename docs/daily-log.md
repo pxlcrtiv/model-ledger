@@ -26,3 +26,10 @@ An upgradeable registry (EIP-1967 proxy) trades a little trust for future flexib
 
 > `grep -rn 'proxy\|upgrade' contracts/ docs/ 2>/dev/null || echo 'registry is deliberately immutable'`
 
+
+## 2026-08-26 — Daily entry: CREATE2: deterministic deployment addresses
+
+`CREATE2` lets you compute the registry address before it exists (salt + init code hash). Deterministic addresses make README links stable across redeploys and let dApps pre-approve the registry. Foundry: `computeCreate2Address` cheatcode or `cast create2` for tooling.
+
+> `cast create2 --init-code $(forge inspect ModelLedger bytecode) --salt 0x0`
+
