@@ -33,3 +33,10 @@ An upgradeable registry (EIP-1967 proxy) trades a little trust for future flexib
 
 > `cast create2 --init-code $(forge inspect ModelLedger bytecode) --salt 0x0`
 
+
+## 2026-08-27 — Daily entry: EIP-1167 clones: one registry logic, many instances
+
+Minimal proxies (20 lines of bytecode) let every team deploy their own registry pointing at shared logic — cheap (a few thousand gas) and individually ownable. Great for 'registry per org, logic shared' designs. The canonical hash still lives per-instance.
+
+> `grep -rni 'clone\|1167' contracts/ 2>/dev/null || echo 'ModelLedger deploys full contracts for now'`
+
