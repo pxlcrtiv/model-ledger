@@ -40,3 +40,10 @@ Minimal proxies (20 lines of bytecode) let every team deploy their own registry 
 
 > `grep -rni 'clone\|1167' contracts/ 2>/dev/null || echo 'ModelLedger deploys full contracts for now'`
 
+
+## 2026-08-28 — Daily entry: EIP-712 typed signatures: off-chain consent, on-chain records
+
+With EIP-712, the registry could accept signed metadata updates (the model owner signs a new manifest hash, any relayer submits it) — the classic 'gasless' pattern. `domainSeparator` + `hashStruct` must match exactly between signer and verifier; golden tests are the safety net.
+
+> `cast sig 'verifyModelUpdate(bytes32,bytes32,uint256,bytes)'`
+
