@@ -47,3 +47,10 @@ With EIP-712, the registry could accept signed metadata updates (the model owner
 
 > `cast sig 'verifyModelUpdate(bytes32,bytes32,uint256,bytes)'`
 
+
+## 2026-08-29 — Daily entry: personal_sign vs typed data: never hand-roll signatures
+
+Raw `personal_sign` of arbitrary bytes is how signature-replay bugs happen (users sign a 'message' that is actually a transaction). Prefer typed, domain-separated schemas (EIP-712) or EIP-191 versioned envelopes so a signature means exactly one thing.
+
+> `cast sig 'claim(string,address,uint256)'`
+
