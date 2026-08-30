@@ -54,3 +54,10 @@ Raw `personal_sign` of arbitrary bytes is how signature-replay bugs happen (user
 
 > `cast sig 'claim(string,address,uint256)'`
 
+
+## 2026-08-30 — Daily entry: Keepers vs cron: on-chain automation is a trust decision
+
+Automated registry maintenance (heartbeat updates, expiry checks) can run off-chain (cron/launchd — like this very repo) or via keepers (Chainlink Automation). Off-chain is simpler and free; on-chain keepers are censorship-resistant. For a provenance registry, off-chain beats on-chain until trust questions are answered.
+
+> `crontab -l 2>/dev/null | head -5`
+
