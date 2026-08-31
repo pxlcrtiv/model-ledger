@@ -61,3 +61,10 @@ Automated registry maintenance (heartbeat updates, expiry checks) can run off-ch
 
 > `crontab -l 2>/dev/null | head -5`
 
+
+## 2026-08-31 — Daily entry: EIP-2981: royalties for model NFTs, if you go that route
+
+If model ownership ever tokenizes (memberships, licensing), EIP-2981 gives the registry a standard royalty interface — one function, `royaltyInfo`, that marketplaces read. It does not move money itself; it informs the marketplace. Standard > bespoke for anything other contracts will integrate.
+
+> `cast sig 'royaltyInfo(uint256,uint256)(address,uint256)'`
+
