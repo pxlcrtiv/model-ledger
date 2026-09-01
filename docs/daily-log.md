@@ -68,3 +68,10 @@ If model ownership ever tokenizes (memberships, licensing), EIP-2981 gives the r
 
 > `cast sig 'royaltyInfo(uint256,uint256)(address,uint256)'`
 
+
+## 2026-09-01 — Daily entry: Semver for artifacts: models are software too
+
+MAJOR for architecture changes (weights incompatible), MINOR for behavior changes (new tokenizer, same arch), PATCH for retrains of the same config. Semantic versions make registry queries ('newest compatible v2') mechanical instead of tribal knowledge. Record the version in the manifest, not just the filename.
+
+> `jq '.version' example/demo-model/manifest.json`
+
