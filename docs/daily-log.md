@@ -75,3 +75,10 @@ MAJOR for architecture changes (weights incompatible), MINOR for behavior change
 
 > `jq '.version' example/demo-model/manifest.json`
 
+
+## 2026-09-02 — Daily entry: Hash trees: don't register a 2 GB file, register its tree root
+
+For multi-file artifacts (weights + tokenizer + configs), hash each file and register the root of the tree. Verifying any subset of files is possible without the rest. This is how the registry scales from demo models to real checkpoints.
+
+> `mlm manifest register --model example/demo-model --owner 0xYourAddress`
+
