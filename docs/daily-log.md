@@ -82,3 +82,10 @@ For multi-file artifacts (weights + tokenizer + configs), hash each file and reg
 
 > `mlm manifest register --model example/demo-model --owner 0xYourAddress`
 
+
+## 2026-09-03 — Daily entry: Cold vs warm slots: why the registry reads are cheap
+
+First read of a storage slot costs 2100 gas (cold), subsequent 100 (warm). A CLI that reads the same record's fields back-to-back is naturally warm — but a dApp that re-queries per field pays cold repeatedly. Batch reads into one call/struct return where possible.
+
+> `cast call <registry> 'getRecord(address,string)(string,bytes32,uint256,bool)' <owner> 'demo-model'`
+
