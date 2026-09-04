@@ -89,3 +89,10 @@ First read of a storage slot costs 2100 gas (cold), subsequent 100 (warm). A CLI
 
 > `cast call <registry> 'getRecord(address,string)(string,bytes32,uint256,bool)' <owner> 'demo-model'`
 
+
+## 2026-09-04 — Daily entry: .env discipline: keys are not code
+
+The repo's `.env.example` lists every variable the deploy scripts need. Keep real keys out of git — a leaked `PRIVATE_KEY` in the registry repo compromises the *owner role of the registry itself*. `git log -p` is forever; rotate immediately if anything sensitive ever lands.
+
+> `grep -rn 'PRIVATE_KEY\|SEPOLIA' .env.example`
+
