@@ -96,3 +96,10 @@ The repo's `.env.example` lists every variable the deploy scripts need. Keep rea
 
 > `grep -rn 'PRIVATE_KEY\|SEPOLIA' .env.example`
 
+
+## 2026-09-05 — Daily entry: anvil: the registry's local playground
+
+`anvil` spins up a local chain with pre-funded accounts in one command. It is how the CLI's `demo` command shows end-to-end register -> verify flows without any faucet — and exactly how the README's live transcript was produced. Local-first verification beats testnet-first for every iteration.
+
+> `anvil && mlm demo`
+
