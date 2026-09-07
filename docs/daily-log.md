@@ -110,3 +110,10 @@ Foundry's `chisel` gives an interactive Solidity REPL — instant experiments wi
 
 > `chisel`
 
+
+## 2026-09-07 — Daily entry: The verification loop: register, forget, verify
+
+The strongest demo of a provenance registry is the 'cold verify': delete local state, re-fetch the manifest from the registry, and prove the hash matches the artifact. If that works from another machine, the system is doing its job. This is the test to show a skeptical reviewer.
+
+> `mlm verify --model example/demo-model && sha256sum example/demo-model/manifest.json`
+
