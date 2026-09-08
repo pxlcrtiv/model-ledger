@@ -117,3 +117,10 @@ The strongest demo of a provenance registry is the 'cold verify': delete local s
 
 > `mlm verify --model example/demo-model && sha256sum example/demo-model/manifest.json`
 
+
+## 2026-09-08 — Daily entry: Document the demo so the demo documents you
+
+The README's live transcript (real anvil output, real hashes) is the highest-signal artifact for anyone evaluating the repo — it proves the pipeline works without trusting a word of prose. Keep transcripts regenerated when the CLI changes; stale transcripts are worse than none.
+
+> `mlm demo 2>&1 | tee docs/demo-transcript.txt`
+
