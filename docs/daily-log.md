@@ -124,3 +124,10 @@ The README's live transcript (real anvil output, real hashes) is the highest-sig
 
 > `mlm demo 2>&1 | tee docs/demo-transcript.txt`
 
+
+## 2026-09-09 — Daily entry: A little green every day beats a big bang
+
+This very file is the pattern: one small, real, dated contribution per day compounds into a contribution history that says 'this person ships constantly'. The registry's ROADMAP doles the backlog into day-sized chunks for the same reason — activity that recruiters can see is activity that pays.
+
+> `git log --oneline --since=7.days | wc -l`
+
