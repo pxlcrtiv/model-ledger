@@ -131,3 +131,10 @@ This very file is the pattern: one small, real, dated contribution per day compo
 
 > `git log --oneline --since=7.days | wc -l`
 
+
+## 2026-09-10 — Daily entry: A model registry is a hash ledger, not a file server
+
+The whole point of ModelLedger is that the artifact lives anywhere (HF Hub, S3, your laptop) and the chain stores only its fingerprint: manifest hash + metadata + owner. Keep `sha256` of the manifest as the record key — it is cryptographically stable across languages, which is exactly why the golden cross-language tests lock it in Solidity and Python.
+
+> `mlm manifest register --model example/demo-model --owner 0xYourAddress`
+
