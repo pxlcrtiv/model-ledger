@@ -138,3 +138,10 @@ The whole point of ModelLedger is that the artifact lives anywhere (HF Hub, S3, 
 
 > `mlm manifest register --model example/demo-model --owner 0xYourAddress`
 
+
+## 2026-09-11 — Daily entry: Why sha256 and not keccak256 for content
+
+keccak256 is the EVM's native hash and is great for storage keys, but sha256 is the universal content-addressing standard (IPFS, Git, GCS) — the same manifest hashes identically in Python, JS, and Go. ModelLedger deliberately uses sha256 for artifact integrity and keccak256 for EVM addressing. Mixing them up is a classic cross-language footgun; the golden tests exist to catch exactly that.
+
+> `python -c "import hashlib; print(hashlib.sha256(b'model').hexdigest())"`
+
