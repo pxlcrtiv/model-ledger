@@ -145,3 +145,10 @@ keccak256 is the EVM's native hash and is great for storage keys, but sha256 is 
 
 > `python -c "import hashlib; print(hashlib.sha256(b'model').hexdigest())"`
 
+
+## 2026-09-12 — Daily entry: Manifest = the reproducibility contract
+
+A good manifest pins: model name, version, framework, architecture, weights hash, dataset(s) used, license, and training config. Someone with the manifest can rebuild the artifact close enough to verify integrity — that is what makes a registry trustworthy instead of a directory.
+
+> `mlm manifest --help`
+
