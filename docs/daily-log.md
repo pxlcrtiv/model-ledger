@@ -152,3 +152,10 @@ A good manifest pins: model name, version, framework, architecture, weights hash
 
 > `mlm manifest --help`
 
+
+## 2026-09-13 — Daily entry: Register the manifest, not the blob
+
+Hashing a multi-GB checkpoint on-chain is absurd (and unpayable). Hash the *manifest*, which itself contains the blob hashes — a Merkle-trie style chain of trust: record -> manifest -> weights. Registration cost stays constant regardless of model size.
+
+> `mlm manifest register --model example/demo-model --owner 0xYourAddress`
+
