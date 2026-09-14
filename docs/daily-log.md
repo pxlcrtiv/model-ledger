@@ -159,3 +159,10 @@ Hashing a multi-GB checkpoint on-chain is absurd (and unpayable). Hash the *mani
 
 > `mlm manifest register --model example/demo-model --owner 0xYourAddress`
 
+
+## 2026-09-14 — Daily entry: Events are the free database of the registry
+
+Indexing `RecordRegistered(address owner, string modelId, bytes32 manifestHash, ...)` topics is how explorers, UIs, and bots learn about records — cheaper and more reliable than reading storage. If your registry frontend ever breaks, the events are the fallback source of truth.
+
+> `cast logs --address <registry> 'RecordRegistered(address,string,bytes32,uint256,uint256)'`
+
