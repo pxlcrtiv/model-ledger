@@ -166,3 +166,10 @@ Indexing `RecordRegistered(address owner, string modelId, bytes32 manifestHash, 
 
 > `cast logs --address <registry> 'RecordRegistered(address,string,bytes32,uint256,uint256)'`
 
+
+## 2026-09-15 — Daily entry: Struct packing: three uint256 records can cost 3x the gas of one packed
+
+Storage writes cost 20k gas per fresh slot. Order struct fields fat-to-thin (uint256, address, bytes32, then pack uints together) so related values share slots. In a registry record, `timestamp`, `owner`, and version fit naturally — measure with `forge snapshot` before and after.
+
+> `forge snapshot --diff`
+
