@@ -173,3 +173,10 @@ Storage writes cost 20k gas per fresh slot. Order struct fields fat-to-thin (uin
 
 > `forge snapshot --diff`
 
+
+## 2026-09-16 — Daily entry: Revert loudly, return quietly
+
+Registry reads should revert with a reason string (`getRecord` on an unknown id) so callers can't treat 'not found' as 'zero record'. External-facing helper functions returning bools hide failures in downstream integrations. Foundry tests should assert the exact revert reason.
+
+> `forge test --match-test testRevertUnknownRecord -vvv`
+
