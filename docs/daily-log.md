@@ -180,3 +180,10 @@ Registry reads should revert with a reason string (`getRecord` on an unknown id)
 
 > `forge test --match-test testRevertUnknownRecord -vvv`
 
+
+## 2026-09-17 — Daily entry: Ownable without the ceremony
+
+ModelLedger's registry is zero-dependency: `onlyOwner` is a modifier, not an OpenZeppelin import. That is a deliberate call — fewer deps means faster CI, smaller bytecode, and no supply-chain surface. The trade-off is you hand-audit the two lines that make up the pattern.
+
+> `cat contracts/ModelLedger.sol | grep -n 'onlyOwner\|owner' | head`
+
