@@ -187,3 +187,10 @@ ModelLedger's registry is zero-dependency: `onlyOwner` is a modifier, not an Ope
 
 > `cat contracts/ModelLedger.sol | grep -n 'onlyOwner\|owner' | head`
 
+
+## 2026-09-18 — Daily entry: Append-only registries win trust
+
+Letting anyone overwrite a model record destroys provenance — the record you verified yesterday is silently different today. Design for append-and-supersede: new versions create new records, old ones stay immutable and verifiable. Supersession (pointers from old to new) is a feature, mutation is a bug.
+
+> `mlm list --address <registry>`
+
