@@ -194,3 +194,10 @@ Letting anyone overwrite a model record destroys provenance — the record you v
 
 > `mlm list --address <registry>`
 
+
+## 2026-09-19 — Daily entry: Metadata schema versioning: v1 records never die
+
+The moment you change the manifest JSON shape, old records must still parse and verify. Version the schema inside the manifest (`"schema": "model-ledger/v1"`) and keep a decoder per version in the CLI. Breaking parsing = breaking every past verification.
+
+> `jq '.schema' example/demo-model/manifest.json`
+
