@@ -201,3 +201,10 @@ The moment you change the manifest JSON shape, old records must still parse and 
 
 > `jq '.schema' example/demo-model/manifest.json`
 
+
+## 2026-09-20 — Daily entry: HF Hub hashes are free integrity anchors
+
+Hugging Face exposes `sha256` metadata for every file in a repo. ModelLedger reads that metadata without downloading the weights — a lightning-fast, offline-friendly way to build the manifest the registry will hold.
+
+> `mlm manifest register --model gpt2 --from-hf`
+
