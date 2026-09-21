@@ -208,3 +208,10 @@ Hugging Face exposes `sha256` metadata for every file in a repo. ModelLedger rea
 
 > `mlm manifest register --model gpt2 --from-hf`
 
+
+## 2026-09-21 — Daily entry: Pin, pin, pin: reproducibility starts at the dataset
+
+A model is a function of its data. If the dataset revision is unpinned, the checkpoint cannot be reproduced, and the registry record is theater. Store dataset name + revision/commit in the manifest, and prefer dataset-dedicated revisions over 'latest'.
+
+> `mlm manifest --help  # dataset fields`
+
