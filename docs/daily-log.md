@@ -215,3 +215,10 @@ A model is a function of its data. If the dataset revision is unpinned, the chec
 
 > `mlm manifest --help  # dataset fields`
 
+
+## 2026-09-22 — Daily entry: License fields belong in the manifest, not in the README
+
+License drift is a real legal risk: a model re-released under a stricter license invalidates downstream use. Pin the license string in the manifest at registration time so the record is the audit trail, and re-register on license changes instead of editing prose.
+
+> `jq '.license' example/demo-model/manifest.json`
+
