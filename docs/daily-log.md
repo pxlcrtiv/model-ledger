@@ -222,3 +222,10 @@ License drift is a real legal risk: a model re-released under a stricter license
 
 > `jq '.license' example/demo-model/manifest.json`
 
+
+## 2026-09-23 — Daily entry: Benchmarks without hardware context are noise
+
+Registering 'accuracy 0.912' means nothing unless the manifest records hardware, precision, batch size, and dataset split. Benchmark values are part of the reproducibility contract, not decoration. ModelLedger records them as structured metadata so comparisons stay honest.
+
+> `mlm verify --model example/demo-model`
+
