@@ -229,3 +229,10 @@ Registering 'accuracy 0.912' means nothing unless the manifest records hardware,
 
 > `mlm verify --model example/demo-model`
 
+
+## 2026-09-24 — Daily entry: Provenance: the training-data hash is the hardest question
+
+Many teams cannot produce a hash of the exact training data their deployed model saw. That gap is exactly what a provenance registry exists to surface. Even a best-effort data manifest (name, commit, sampler config) today beats an unverifiable model tomorrow.
+
+> `mlm manifest register --model example/demo-model --owner 0xYourAddress`
+
