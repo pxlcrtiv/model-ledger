@@ -236,3 +236,10 @@ Many teams cannot produce a hash of the exact training data their deployed model
 
 > `mlm manifest register --model example/demo-model --owner 0xYourAddress`
 
+
+## 2026-09-25 — Daily entry: Watermarking: the registry record as a fingerprint
+
+Registered models can carry an embedded watermark (a fine-tuned token or latent pattern) that proves provenance when the model leaks outside your org. The registry then proves *when* the artifact existed — the pairing is what makes takedown requests defensible.
+
+> `grep -rn 'watermark' docs/ 2>/dev/null || echo 'docs/daily-log.md has more'`
+
