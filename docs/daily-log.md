@@ -243,3 +243,10 @@ Registered models can carry an embedded watermark (a fine-tuned token or latent 
 
 > `grep -rn 'watermark' docs/ 2>/dev/null || echo 'docs/daily-log.md has more'`
 
+
+## 2026-09-26 — Daily entry: Model registries are the audit trail MLOps forgot
+
+MLflow tracks experiments; ModelLedger tracks *truth about artifacts on a public ledger*. If your CI produces a model nobody can point to as 'the one that shipped', you don't have MLOps — you have a folder. Registration should be a step in the release pipeline, not a manual ceremony.
+
+> `mlm register --model artifacts/model.pt --owner 0xYourAddress`
+
