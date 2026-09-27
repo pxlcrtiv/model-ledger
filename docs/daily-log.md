@@ -250,3 +250,10 @@ MLflow tracks experiments; ModelLedger tracks *truth about artifacts on a public
 
 > `mlm register --model artifacts/model.pt --owner 0xYourAddress`
 
+
+## 2026-09-27 — Daily entry: Test the contract before you deploy it
+
+Foundry makes contract testing a first-class citizen: `forge test` compiles, deploys to an in-memory EVM, and runs assertions in Solidity. The registry's 18-test suite covers behaviors, events, and the canonical hash invariant — run it in CI on every PR, not just before deploys.
+
+> `forge test`
+
