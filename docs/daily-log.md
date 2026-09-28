@@ -257,3 +257,10 @@ Foundry makes contract testing a first-class citizen: `forge test` compiles, dep
 
 > `forge test`
 
+
+## 2026-09-28 — Daily entry: Sepolia is the staging environment for the registry
+
+Testnets are free to the point of being treated as throwaway, but that is exactly their value: deploy, break, redeploy. The repo ships `Deploy.s.sol` and verified Sepolia deploy steps; the only blocker for a live demo is a funded test wallet — Sepolia faucets are public.
+
+> `forge script script/Deploy.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast`
+
