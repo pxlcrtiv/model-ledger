@@ -264,3 +264,10 @@ Testnets are free to the point of being treated as throwaway, but that is exactl
 
 > `forge script script/Deploy.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast`
 
+
+## 2026-09-29 — Daily entry: Verification is the deploy step people skip
+
+An unverified contract on Etherscan is a black box for every recruiter or auditor who clicks through from your README. `forge verify-contract` with a free Etherscan API key turns the registry into a clickable, source-visible artifact. It is ten minutes that pays forever.
+
+> `forge verify-contract <address> contracts/ModelLedger.sol:ModelLedger --etherscan-api-key $ETHERSCAN_API_KEY`
+
