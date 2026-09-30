@@ -271,3 +271,10 @@ An unverified contract on Etherscan is a black box for every recruiter or audito
 
 > `forge verify-contract <address> contracts/ModelLedger.sol:ModelLedger --etherscan-api-key $ETHERSCAN_API_KEY`
 
+
+## 2026-09-30 — Daily entry: Cheatcodes are the fuzzer's best friend
+
+Foundry cheatcodes (`vm.prank`, `vm.warp`, `vm.expectRevert`) let tests impersonate owners, advance time, and assert reverts without a single mock library. The registry tests lean on them heavily — read `test/ModelLedger.t.sol` to see the pattern before writing your own.
+
+> `forge test --match-test testRegister -vvv`
+
