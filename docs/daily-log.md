@@ -278,3 +278,10 @@ Foundry cheatcodes (`vm.prank`, `vm.warp`, `vm.expectRevert`) let tests imperson
 
 > `forge test --match-test testRegister -vvv`
 
+
+## 2026-10-01 — Daily entry: ABI encoding gotchas: strings are dynamic, bytes32 is not
+
+`abi.encode` of a string starts with an offset; `bytes32` is inline. Comparing `keccak256(abi.encodePacked(a))` for two strings is correct only if you know both lengths (padding collisions). The CLI and contract agree on the manifest hash precisely because both sides use the same explicit encoding — change it in one place and verification breaks everywhere.
+
+> `cast keccak $(printf 'hello' | xxd -p)`
+
