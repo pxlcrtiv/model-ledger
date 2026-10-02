@@ -285,3 +285,10 @@ Foundry cheatcodes (`vm.prank`, `vm.warp`, `vm.expectRevert`) let tests imperson
 
 > `cast keccak $(printf 'hello' | xxd -p)`
 
+
+## 2026-10-02 — Daily entry: forge snapshot: gas regressions as a diff
+
+`forge snapshot` writes per-test gas costs to `.gas-snapshot`; `forge snapshot --diff` shows the change in CI. A registry that grows 40% in gas per registration across a refactor is a real finding, and this makes it a one-liner.
+
+> `forge snapshot --diff`
+
