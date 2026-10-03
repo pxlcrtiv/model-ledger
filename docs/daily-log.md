@@ -292,3 +292,10 @@ Foundry cheatcodes (`vm.prank`, `vm.warp`, `vm.expectRevert`) let tests imperson
 
 > `forge snapshot --diff`
 
+
+## 2026-10-03 — Daily entry: Invariant fuzzing catches what unit tests bless
+
+Unit tests prove the cases you thought of. `invariant` tests run random sequences of calls and assert things like 'balance is conserved' or 'every record is owner-checked'. The registry's golden-hash test is the cross-language anchor; fuzzing is the discovery layer on top.
+
+> `forge test --match-test invariant`
+
