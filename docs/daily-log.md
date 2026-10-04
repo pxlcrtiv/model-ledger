@@ -299,3 +299,10 @@ Unit tests prove the cases you thought of. `invariant` tests run random sequence
 
 > `forge test --match-test invariant`
 
+
+## 2026-10-04 — Daily entry: The admin key is the real attack surface
+
+Once the registry is live, the only way to mutate it is the owner key. A single EOA owner is a single point of failure — consider a multisig or timelock for the registry admin role. Document the key-handling decision in the README so reviewers know the threat model.
+
+> `cast call <registry> 'owner()(address)'`
+
