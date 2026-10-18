@@ -390,3 +390,10 @@ The repo's `.env.example` lists every variable the deploy scripts need. Keep rea
 
 > `anvil && mlm demo`
 
+
+## 2026-10-18 — Daily entry: chisel: REPL your way through storage layouts
+
+Foundry's `chisel` gives an interactive Solidity REPL — instant experiments with struct packing, ABI encoding, and hashing before they become contract code. For registry record layouts, fifteen minutes in chisel beats three deploy-test cycles.
+
+> `chisel`
+
