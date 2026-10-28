@@ -9,14 +9,15 @@ from pathlib import Path
 import click
 
 from . import __version__
-from .chain import Chain, fmt_record, network_tag, wait_for_latest
+from .chain import Chain, network_tag
+from .formatter import fmt_record
 from .manifest import (
     canonical_manifest,
     hash_manifest_bytes,
     manifest_from_hf,
     manifest_from_local_dir,
-    manifest_hash,
 )
+from .workflow import run_workflow
 
 DEFAULT_RPC = "http://127.0.0.1:8545"
 ANVIL_DEV_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
@@ -98,16 +99,22 @@ def register_cmd(repo, hash_, manifest_file, uri, key, rpc, contract):
     if chain.is_registered(repo):
         click.echo(f"already registered: {repo}")
         sys.exit(1)
-    receipt = chain.register(key, repo, digest, uri)
-    click.echo(f"tx:      {receipt.transactionHash.hex()}")
-    click.echo(f"block:   {receipt.blockNumber}")
-    click.echo(f"from:    {receipt['from']}")
-    click.echo(f"contract:{chain.address}")
-    wait_for_latest(chain.w3)
-    ok, record = chain.verify(repo, digest)
-    click.echo("on-chain verify after register: " + ("VERIFIED ✓" if ok else "FAILED ✗"))
-    if record:
-        click.echo(fmt_record(record))
+
+    def print_receipt(receipt):
+        click.echo(f"tx:      {receipt.transactionHash.hex()}")
+        click.echo(f"block:   {receipt.blockNumber}")
+        click.echo(f"from:    {receipt['from']}")
+        click.echo(f"contract:{chain.address}")
+
+    run_workflow(
+        chain,
+        send_tx=lambda: chain.register(key, repo, digest, uri),
+        repo=repo,
+        digest=digest,
+        print_receipt=print_receipt,
+        verify_label="on-chain verify after register",
+        printer=click.echo,
+    )
 
 
 # ---------------------------------------------------------------------- verify
@@ -175,12 +182,20 @@ def update_cmd(repo, hash_, uri, key, rpc, contract):
     if not key:
         raise click.UsageError("--key required (or set MODEL_LEDGER_PRIVATE_KEY)")
     chain = Chain.connect(rpc, contract)
-    receipt = chain.update_manifest(key, repo, hash_, uri)
-    click.echo(f"tx:    {receipt.transactionHash.hex()}")
-    click.echo(f"block: {receipt.blockNumber}")
-    wait_for_latest(chain.w3)
-    ok, record = chain.verify(repo, hash_)
-    click.echo("on-chain verify after update: " + ("VERIFIED ✓" if ok else "FAILED ✗"))
+
+    def print_receipt(receipt):
+        click.echo(f"tx:    {receipt.transactionHash.hex()}")
+        click.echo(f"block: {receipt.blockNumber}")
+
+    run_workflow(
+        chain,
+        send_tx=lambda: chain.update_manifest(key, repo, hash_, uri),
+        repo=repo,
+        digest=hash_,
+        print_receipt=print_receipt,
+        verify_label="on-chain verify after update",
+        printer=click.echo,
+    )
 
 
 # --------------------------------------------------------------------- deploy
@@ -234,17 +249,24 @@ def demo_cmd(repo, rpc):
 
     if chain.is_registered(repo):
         click.echo(f"'{repo}' exists — updating instead")
-        receipt = chain.update_manifest(key, repo, digest, "")
-        action = "updated"
+        action_label = "updated"
+        send_fn = lambda: chain.update_manifest(key, repo, digest, "")
     else:
-        receipt = chain.register(key, repo, digest, "")
-        action = "registered"
-    click.echo(f"{action}: tx {receipt.transactionHash.hex()} (block {receipt.blockNumber})")
-    wait_for_latest(chain.w3)
+        action_label = "registered"
+        send_fn = lambda: chain.register(key, repo, digest, "")
 
-    ok, record = chain.verify(repo, digest)
-    click.echo("verify:  " + ("VERIFIED ✓" if ok else "NOT VERIFIED ✗"))
-    click.echo(fmt_record(record))
+    def print_receipt(receipt):
+        click.echo(f"{action_label}: tx {receipt.transactionHash.hex()} (block {receipt.blockNumber})")
+
+    run_workflow(
+        chain,
+        send_tx=send_fn,
+        repo=repo,
+        digest=digest,
+        print_receipt=print_receipt,
+        verify_label="verify",
+        printer=click.echo,
+    )
     click.echo(f"total:   {chain.total_models()} model(s) registered")
     click.echo("── demo complete ──────────────────────────────────────────")
     click.echo(f"contract address: {chain.address}  (saved in {deploy_path or 'deployments/anvil.json'})")

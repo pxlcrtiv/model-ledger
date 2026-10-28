@@ -178,23 +178,10 @@ class Chain:
         return address, path
 
 
-def fmt_record(rec: dict) -> str:
-    import datetime as _dt
-
-    def ts(x: int) -> str:
-        return _dt.datetime.fromtimestamp(x, tz=_dt.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-
-    return (
-        f"  repoId           {rec['repoId']}\n"
-        f"  owner            {rec['owner']}\n"
-        f"  manifestHash     {rec['manifestHash']}\n"
-        f"  metadataUri      {rec['metadataUri'] or '-'}\n"
-        f"  registeredAt     {ts(rec['registeredAt'])}\n"
-        f"  updatedAt        {ts(rec['updatedAt'])}\n"
-        f"  manifestVersion  {rec['manifestVersion']}"
-    )
-
-
 def wait_for_latest(w3: Web3, seconds: float = 0.6) -> None:
     """Give the chain a beat so subsequent reads see the new block."""
     time.sleep(seconds)
+
+
+# fmt_record is re-exported from formatter so existing imports keep working.
+from .formatter import fmt_record  # noqa: E402
