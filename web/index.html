@@ -85,13 +85,13 @@
   function fmtRecord(r) {
     const ts = (x) => new Date(Number(x) * 1000).toISOString().replace("T", " ").slice(0, 19) + " UTC";
     return [
-      `owner           ${r.owner}`,
-      `manifestHash    ${r.manifestHash}`,
-      `repoId          ${r.repoId}`,
-      `metadataUri     ${r.metadataUri || "-"}`,
-      `registeredAt    ${ts(r.registeredAt)}`,
-      `updatedAt       ${ts(r.updatedAt)}`,
-      `manifestVersion ${r.manifestVersion}`,
+      `  repoId           ${r.repoId}`,
+      `  owner            ${r.owner}`,
+      `  manifestHash     ${r.manifestHash}`,
+      `  metadataUri      ${r.metadataUri || "-"}`,
+      `  registeredAt     ${ts(r.registeredAt)}`,
+      `  updatedAt        ${ts(r.updatedAt)}`,
+      `  manifestVersion  ${r.manifestVersion}`,
     ].join("\n");
   }
 
