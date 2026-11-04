@@ -31,7 +31,7 @@ def run_workflow(
     """
     receipt = send_tx()
     print_receipt(receipt)
-    wait_for_latest(chain.w3)
+    wait_for_latest()
     ok, record = chain.verify(repo, digest)
     printer(f"{verify_label}: {'VERIFIED ✓' if ok else 'FAILED ✗'}")
     if record:

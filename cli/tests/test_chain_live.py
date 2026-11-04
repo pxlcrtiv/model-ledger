@@ -50,7 +50,7 @@ def test_full_lifecycle_on_anvil():
 
     chain = Chain.connect(RPC)
     digest = _demo_manifest_hash()
-    account = chain.w3.eth.account.from_key(ANVIL_DEV_KEY)
+    account = Web3().eth.account.from_key(ANVIL_DEV_KEY)
 
     # register
     receipt = chain.register(ANVIL_DEV_KEY, "test/flow-model", digest, "ipfs://QmTest")
@@ -75,7 +75,7 @@ def test_full_lifecycle_on_anvil():
     assert record["manifestVersion"] == 2
 
     # transfer + non-owner cannot update
-    other = chain.w3.eth.account.create()
+    other = Web3().eth.account.create()
     receipt = chain.transfer_ownership(ANVIL_DEV_KEY, "test/flow-model", other.address)
     assert receipt.status == 1
     assert chain.get("test/flow-model")["owner"] == other.address

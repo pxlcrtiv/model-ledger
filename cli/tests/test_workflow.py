@@ -31,7 +31,7 @@ def test_run_workflow_full_sequence():
             verify_label="verify",
             printer=printer,
         )
-        mock_wait.assert_called_once_with(chain.w3)
+        mock_wait.assert_called_once_with()
 
     assert printed[0] == f"tx:{receipt.transactionHash.hex()}"
     assert printed[1] == "verify: VERIFIED ✓"
