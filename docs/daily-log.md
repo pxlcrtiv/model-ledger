@@ -600,3 +600,10 @@ Once the registry is live, the only way to mutate it is the owner key. A single 
 
 > `cast send <registry> 'renounceOwnership()' --from <owner>`
 
+
+## 2026-11-17 — Daily entry: Proxies: the upgrade later you may never need
+
+An upgradeable registry (EIP-1967 proxy) trades a little trust for future flexibility — but every proxy is a point of centralization and storage-layout discipline. For a provenance registry, immutability is often the *feature*; decide once, at design time, and document the decision.
+
+> `grep -rn 'proxy\|upgrade' contracts/ docs/ 2>/dev/null || echo 'registry is deliberately immutable'`
+
