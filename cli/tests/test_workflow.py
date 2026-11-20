@@ -1,6 +1,7 @@
 """Tests for TransactionWorkflow — the tx → wait → verify → print recipe."""
 from unittest.mock import MagicMock, patch
 
+from model_ledger.chain import ModelRecord
 from model_ledger.workflow import run_workflow
 
 
@@ -60,15 +61,15 @@ def test_run_workflow_prints_failure_when_verify_fails():
 
 
 def test_run_workflow_prints_record_when_present():
-    record = {
-        "repoId": "test/repo",
-        "owner": "0xabc",
-        "manifestHash": "0xdef",
-        "metadataUri": "",
-        "registeredAt": 0,
-        "updatedAt": 0,
-        "manifestVersion": 1,
-    }
+    record = ModelRecord(
+        owner="0xabc",
+        manifest_hash="0xdef",
+        repo_id="test/repo",
+        metadata_uri="",
+        registered_at=0,
+        updated_at=0,
+        manifest_version=1,
+    )
     chain, receipt = _make_chain(verify_result=(True, record))
     printed = []
 

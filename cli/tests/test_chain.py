@@ -130,21 +130,6 @@ class TestModelRecord:
         assert d["updatedAt"] == 2
         assert d["manifestVersion"] == 3
 
-    def test_dict_like_get_and_getitem(self):
-        rec = ModelRecord(
-            owner="0xowner",
-            manifest_hash="0xh",
-            repo_id="r",
-            metadata_uri="",
-            registered_at=0,
-            updated_at=0,
-            manifest_version=1,
-        )
-        assert rec.get("repoId") == "r"
-        assert rec.get("missing", "default") == "default"
-        assert rec["repoId"] == "r"
-        assert rec["manifestVersion"] == 1
-
 
 # ---------------------------------------------------------------------------
 # network_tag / deployed_address / save_deployed / load_artifact

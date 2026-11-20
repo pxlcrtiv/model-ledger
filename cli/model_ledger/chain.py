@@ -9,7 +9,6 @@ import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
 
 from web3 import Web3
 from web3.types import TxReceipt
@@ -91,25 +90,6 @@ class ModelRecord:
             "updatedAt": self.updated_at,
             "manifestVersion": self.manifest_version,
         }
-
-    def get(self, key: str, default=None):
-        """Dict-like access so fmt_record and legacy callers keep working."""
-        attr = _FIELD_ALIASES.get(key, key)
-        return getattr(self, attr, default)
-
-    def __getitem__(self, key: str):
-        attr = _FIELD_ALIASES.get(key, key)
-        return getattr(self, attr)
-
-
-_FIELD_ALIASES: Final[dict[str, str]] = {
-    "repoId": "repo_id",
-    "manifestHash": "manifest_hash",
-    "metadataUri": "metadata_uri",
-    "registeredAt": "registered_at",
-    "updatedAt": "updated_at",
-    "manifestVersion": "manifest_version",
-}
 
 
 class Chain:

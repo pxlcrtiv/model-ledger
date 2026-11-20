@@ -1,0 +1,44 @@
+{
+  "comment": "Golden record-rendering fixture shared by the Python adapter (fmt_record) and the web adapter (web/render.js via node). Expected strings are hand-worked literals; see cli/tests/test_formatter.py and cli/tests/test_web_render.py.",
+  "cases": [
+    {
+      "name": "full-record",
+      "record": {
+        "repoId": "test/repo",
+        "owner": "0xabcdef1234567890",
+        "manifestHash": "0xabababababababababababababababababababababababababababababababab",
+        "metadataUri": "ipfs://QmTest",
+        "registeredAt": 1700000000,
+        "updatedAt": 1700000000,
+        "manifestVersion": 1
+      },
+      "expected": "  repoId           test/repo\n  owner            0xabcdef1234567890\n  manifestHash     0xabababababababababababababababababababababababababababababababab\n  metadataUri      ipfs://QmTest\n  registeredAt     2023-11-14 22:13:20 UTC\n  updatedAt        2023-11-14 22:13:20 UTC\n  manifestVersion  1"
+    },
+    {
+      "name": "empty-uri-epoch-zero",
+      "record": {
+        "repoId": "empty/uri",
+        "owner": "0x0",
+        "manifestHash": "0xcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+        "metadataUri": "",
+        "registeredAt": 0,
+        "updatedAt": 0,
+        "manifestVersion": 2
+      },
+      "expected": "  repoId           empty/uri\n  owner            0x0\n  manifestHash     0xcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\n  metadataUri      -\n  registeredAt     1970-01-01 00:00:00 UTC\n  updatedAt        1970-01-01 00:00:00 UTC\n  manifestVersion  2"
+    },
+    {
+      "name": "long-values-distinct-times",
+      "record": {
+        "repoId": "some-org/a-very-long-model-name",
+        "owner": "0x1234567890abcdef1234567890abcdef12345678",
+        "manifestHash": "0xefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+        "metadataUri": "https://example.org/meta.json",
+        "registeredAt": 1700000000,
+        "updatedAt": 1700000061,
+        "manifestVersion": 10
+      },
+      "expected": "  repoId           some-org/a-very-long-model-name\n  owner            0x1234567890abcdef1234567890abcdef12345678\n  manifestHash     0xefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef\n  metadataUri      https://example.org/meta.json\n  registeredAt     2023-11-14 22:13:20 UTC\n  updatedAt        2023-11-14 22:14:21 UTC\n  manifestVersion  10"
+    }
+  ]
+}

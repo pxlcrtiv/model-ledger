@@ -33,8 +33,8 @@ jobs:
           python-version: "3.12"
       - name: Install deps
         run: pip install -r cli/requirements-dev.txt
-      - name: Manifest hashing unit tests
-        run: pytest cli/tests/test_manifest.py -q
+      - name: CLI unit tests (incl. cross-runtime render goldens via node)
+        run: pytest cli/tests -q
 
   cli-e2e-anvil:
     name: CLI e2e on local anvil
