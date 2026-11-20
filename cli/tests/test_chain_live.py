@@ -57,8 +57,8 @@ def test_full_lifecycle_on_anvil():
     assert receipt.status == 1
     ok, record = chain.verify("test/flow-model", digest)
     assert ok
-    assert record["owner"] == account.address
-    assert record["manifestVersion"] == 1
+    assert record.owner == account.address
+    assert record.manifest_version == 1
     assert chain.is_registered("test/flow-model")
     assert chain.total_models() == 1
 
@@ -72,13 +72,13 @@ def test_full_lifecycle_on_anvil():
     assert receipt.status == 1
     ok, record = chain.verify("test/flow-model", v2)
     assert ok
-    assert record["manifestVersion"] == 2
+    assert record.manifest_version == 2
 
     # transfer + non-owner cannot update
     other = Web3().eth.account.create()
     receipt = chain.transfer_ownership(ANVIL_DEV_KEY, "test/flow-model", other.address)
     assert receipt.status == 1
-    assert chain.get("test/flow-model")["owner"] == other.address
+    assert chain.get("test/flow-model").owner == other.address
     with pytest.raises(Exception):
         chain.update_manifest(ANVIL_DEV_KEY, "test/flow-model", "0x" + "33" * 32)
 

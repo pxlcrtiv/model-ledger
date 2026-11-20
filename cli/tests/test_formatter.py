@@ -1,78 +1,41 @@
-"""Tests for RecordFormatter — single source of truth for record formatting."""
+"""Tests for the record-rendering module — one format spec, two adapters."""
+import json
+from pathlib import Path
 
-from model_ledger.formatter import RecordFormatter, fmt_record
+from model_ledger.chain import ModelRecord
+from model_ledger.formatter import fmt_record, to_json_spec
 
-EPOCH = 1700000000  # 2023-11-14 22:13:20 UTC
+FIXTURE = Path(__file__).parent / "golden_render_fixture.json"
 
 
-def test_fmt_record_exact_output():
-    record = {
-        "repoId": "test/repo",
-        "owner": "0xabcdef1234567890",
-        "manifestHash": "0x" + "ab" * 32,
-        "metadataUri": "ipfs://QmTest",
-        "registeredAt": EPOCH,
-        "updatedAt": EPOCH,
-        "manifestVersion": 1,
-    }
-    result = fmt_record(record)
-    expected = (
-        "  repoId           test/repo\n"
-        "  owner            0xabcdef1234567890\n"
-        "  manifestHash     0x" + "ab" * 32 + "\n"
-        "  metadataUri      ipfs://QmTest\n"
-        "  registeredAt     2023-11-14 22:13:20 UTC\n"
-        "  updatedAt        2023-11-14 22:13:20 UTC\n"
-        "  manifestVersion  1"
+def _model_record(data: dict) -> ModelRecord:
+    return ModelRecord(
+        owner=data["owner"],
+        manifest_hash=data["manifestHash"],
+        repo_id=data["repoId"],
+        metadata_uri=data["metadataUri"],
+        registered_at=data["registeredAt"],
+        updated_at=data["updatedAt"],
+        manifest_version=data["manifestVersion"],
     )
-    assert result == expected
 
 
-def test_fmt_record_empty_metadata_uri_renders_dash():
-    record = {
-        "repoId": "test/repo",
-        "owner": "0xabc",
-        "manifestHash": "0xdef",
-        "metadataUri": "",
-        "registeredAt": EPOCH,
-        "updatedAt": EPOCH,
-        "manifestVersion": 1,
-    }
-    result = fmt_record(record)
-    assert "metadataUri      -" in result
-    assert "metadataUri      " not in result.replace("metadataUri      -", "")
+def test_fmt_record_golden_fixture():
+    """Python adapter: ModelRecord in -> golden text out, same fixture the
+    web adapter is tested against (cli/tests/test_web_render.py)."""
+    for case in json.loads(FIXTURE.read_text())["cases"]:
+        assert fmt_record(_model_record(case["record"])) == case["expected"], case["name"]
 
 
-def test_record_formatter_class_delegates():
-    formatter = RecordFormatter()
-    record = {
-        "repoId": "r",
-        "owner": "o",
-        "manifestHash": "h",
-        "metadataUri": "",
-        "registeredAt": EPOCH,
-        "updatedAt": EPOCH,
-        "manifestVersion": 2,
-    }
-    assert formatter.format(record) == fmt_record(record)
-
-
-def test_format_spec_export_shape():
-    spec = RecordFormatter.to_json_spec()
-    assert len(spec) == 7
-    keys = [s["key"] for s in spec]
-    assert keys == [
-        "repoId",
-        "owner",
-        "manifestHash",
-        "metadataUri",
-        "registeredAt",
-        "updatedAt",
-        "manifestVersion",
+def test_to_json_spec_golden():
+    """The exported spec is the web viewer's source of truth: exact keys,
+    order, widths, value types, and the empty-metadataUri dash rule."""
+    assert to_json_spec() == [
+        {"key": "repoId", "width": 17, "type": "string"},
+        {"key": "owner", "width": 17, "type": "string"},
+        {"key": "manifestHash", "width": 17, "type": "string"},
+        {"key": "metadataUri", "width": 17, "type": "string", "empty": "-"},
+        {"key": "registeredAt", "width": 17, "type": "timestamp"},
+        {"key": "updatedAt", "width": 17, "type": "timestamp"},
+        {"key": "manifestVersion", "width": 17, "type": "string"},
     ]
-    # Each entry has width and type
-    for entry in spec:
-        assert "key" in entry
-        assert "width" in entry
-        assert "type" in entry
-        assert entry["width"] == 17

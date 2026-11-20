@@ -10,6 +10,12 @@ corpus, more chains, and more eyes on the hashing rules.
   `cli/tests/test_manifest.py`. If you touch sorting, hashing, or field
   serialization, update **both** golden fixtures **in the same commit** or CI
   will (rightly) fail.
+- **One format spec, two adapters.** Record presentation lives in
+  `cli/model_ledger/formatter.py` (`FORMAT_SPEC`) and reaches the web viewer
+  through the spec embedded in `web/index.html`. After changing the spec, run
+  `python scripts/gen_web_spec.py`; `cli/tests/test_web_render.py` golden-tests
+  both runtimes against `cli/tests/golden_render_fixture.json` and fails on
+  drift (needs `node` on PATH).
 - **The contract holds nothing.** No value-transfer paths, no `payable` sugar.
   Keep it that way — this is a registry, not a vault.
 - **Testnet-first.** Demo on anvil, reference deployment on Sepolia. Never

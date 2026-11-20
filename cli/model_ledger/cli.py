@@ -138,7 +138,7 @@ def verify_cmd(repo, hash_, manifest_file, rpc, contract):
         click.echo(f"{repo} VERIFIED ✓ — manifest hash is registered")
     else:
         click.echo(f"{repo} NOT VERIFIED ✗ — hash mismatch or not registered")
-    if record and record["repoId"]:
+    if record and record.repo_id:
         click.echo(fmt_record(record))
 
 

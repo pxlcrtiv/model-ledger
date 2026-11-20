@@ -5,6 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ModelLedger — on-chain provenance viewer</title>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<script src="render.js"></script>
+<script type="application/json" id="format-spec">
+[
+  {
+    "key": "repoId",
+    "width": 17,
+    "type": "string"
+  },
+  {
+    "key": "owner",
+    "width": 17,
+    "type": "string"
+  },
+  {
+    "key": "manifestHash",
+    "width": 17,
+    "type": "string"
+  },
+  {
+    "key": "metadataUri",
+    "width": 17,
+    "type": "string",
+    "empty": "-"
+  },
+  {
+    "key": "registeredAt",
+    "width": 17,
+    "type": "timestamp"
+  },
+  {
+    "key": "updatedAt",
+    "width": 17,
+    "type": "timestamp"
+  },
+  {
+    "key": "manifestVersion",
+    "width": 17,
+    "type": "string"
+  }
+]
+</script>
 <style>
   :root { color-scheme: dark; }
   body { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #0d1117; color: #e6edf3; margin: 0; }
@@ -82,18 +123,10 @@
     return new ethers.Contract(address, MIN_ABI, provider);
   }
 
-  function fmtRecord(r) {
-    const ts = (x) => new Date(Number(x) * 1000).toISOString().replace("T", " ").slice(0, 19) + " UTC";
-    return [
-      `  repoId           ${r.repoId}`,
-      `  owner            ${r.owner}`,
-      `  manifestHash     ${r.manifestHash}`,
-      `  metadataUri      ${r.metadataUri || "-"}`,
-      `  registeredAt     ${ts(r.registeredAt)}`,
-      `  updatedAt        ${ts(r.updatedAt)}`,
-      `  manifestVersion  ${r.manifestVersion}`,
-    ].join("\n");
-  }
+  // Presentation rules live in cli/model_ledger/formatter.py; the embedded
+  // format-spec block above is its export (kept in sync by test_web_render.py).
+  const FORMAT_SPEC = JSON.parse($("format-spec").textContent);
+  const fmtRecord = (r) => renderRecord(FORMAT_SPEC, r);
 
   $("verify").onclick = async () => {
     clear();
